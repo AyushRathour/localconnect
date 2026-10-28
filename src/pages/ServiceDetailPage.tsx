@@ -241,13 +241,13 @@ export const ServiceDetailPage: React.FC = () => {
               <div className="flex items-center gap-2 text-slate-600">
                 <ShieldCheck className="w-4 h-4 text-[#0F9D8A] shrink-0" />
                 <span>
-                  <strong>Pricing:</strong> {service.pricingType.replace('_', ' ')}
+                  <strong>Pricing:</strong> {(service.pricingType || service.priceType || 'fixed').replace('_', ' ')}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-slate-600 col-span-2 sm:col-span-1">
                 <MapPin className="w-4 h-4 text-[#0F9D8A] shrink-0" />
                 <span className="truncate">
-                  <strong>Service Areas:</strong> {service.serviceAreas.join(', ')}
+                  <strong>Service Areas:</strong> {(service.serviceAreas || [service.serviceArea || 'Bangalore']).join(', ')}
                 </span>
               </div>
             </div>
@@ -382,7 +382,7 @@ export const ServiceDetailPage: React.FC = () => {
                 </div>
               </div>
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                {service.pricingType.replace('_', ' ')}
+                {(service.pricingType || service.priceType || 'fixed').replace('_', ' ')}
               </span>
             </div>
 

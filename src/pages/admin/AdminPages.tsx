@@ -133,7 +133,7 @@ export const AdminVerificationsPage: React.FC = () => {
                       {p.documents.map((d: any) => (
                         <div key={d._id} className="flex items-center justify-between text-[11px]">
                           <span className="font-mono text-slate-700">📄 {d.documentName}</span>
-                          <span className="text-slate-400 capitalize">({d.documentType.replace('_', ' ')})</span>
+                          <span className="text-slate-400 capitalize">({(d.documentType || 'document').replace('_', ' ')})</span>
                         </div>
                       ))}
                     </div>

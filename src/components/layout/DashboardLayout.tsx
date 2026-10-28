@@ -134,7 +134,7 @@ export const DashboardLayout: React.FC = () => {
                     : 'text-slate-600'
                 }`}
               >
-                {providerProfile.verificationStatus.replace('_', ' ')}
+                {(providerProfile.verificationStatus || 'pending').replace('_', ' ')}
               </span>
             </div>
           )}

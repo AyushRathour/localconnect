@@ -323,7 +323,7 @@ export const HomePage: React.FC = () => {
                     <div>
                       <p className="font-semibold text-slate-800">{service.provider.businessName}</p>
                       <p className="text-slate-400">
-                        {service.serviceAreas.slice(0, 2).join(', ')}
+                        {service.serviceAreas?.slice(0, 2)?.join(', ') || service.serviceArea || 'Bangalore'}
                       </p>
                     </div>
                     <RatingStars
@@ -341,7 +341,7 @@ export const HomePage: React.FC = () => {
                     ₹{service.price}
                     <span className="text-xs font-normal text-slate-500">
                       {' '}
-                      ({service.pricingType.replace('_', ' ')})
+                      ({((service.pricingType || service.priceType || 'fixed') as string).replace('_', ' ')})
                     </span>
                   </span>
                 </div>

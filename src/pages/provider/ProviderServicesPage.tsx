@@ -182,7 +182,7 @@ export const ProviderServicesPage: React.FC = () => {
                     {srv.category?.name || 'Local Service'}
                   </span>
                   <span className="text-[11px] font-semibold text-slate-400 capitalize">
-                    {srv.pricingType.replace('_', ' ')}
+                    {((srv.pricingType || srv.priceType || 'fixed') as string).replace('_', ' ')}
                   </span>
                 </div>
 

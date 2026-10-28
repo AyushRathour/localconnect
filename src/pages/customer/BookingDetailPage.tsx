@@ -184,7 +184,7 @@ export const BookingDetailPage: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-slate-900 uppercase tracking-wide">
-                    {step.status.replace('_', ' ')}
+                    {(step.status || '').replace('_', ' ')}
                   </span>
                   <span className="text-[11px] text-slate-400 tabular-nums">
                     {new Date(step.timestamp).toLocaleString()}

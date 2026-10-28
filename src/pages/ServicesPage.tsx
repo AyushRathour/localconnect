@@ -362,7 +362,7 @@ export const ServicesPage: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-1 text-slate-400 text-[11px] truncate">
                           <MapPin className="w-3 h-3 shrink-0" />
-                          <span>{service.serviceAreas.slice(0, 3).join(', ')}</span>
+                          <span>{service.serviceAreas?.slice(0, 3)?.join(', ') || service.serviceArea || 'Bangalore'}</span>
                         </div>
                       </div>
                     )}

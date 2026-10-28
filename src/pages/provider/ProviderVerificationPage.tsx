@@ -98,7 +98,7 @@ export const ProviderVerificationPage: React.FC = () => {
             </span>
             <div className="flex items-center gap-3 mt-1">
               <h2 className="text-xl font-bold text-[#16324F] capitalize">
-                {currentStatus.replace('_', ' ')}
+                {(currentStatus || 'pending').replace('_', ' ')}
               </h2>
               <VerificationBadge status={currentStatus} size="md" />
             </div>
@@ -139,7 +139,7 @@ export const ProviderVerificationPage: React.FC = () => {
                     <FileText className="w-4 h-4 text-[#16324F]" />
                     <div>
                       <p className="font-semibold text-slate-800">{doc.documentName}</p>
-                      <p className="text-[11px] text-slate-400 capitalize">{doc.documentType.replace('_', ' ')}</p>
+                      <p className="text-[11px] text-slate-400 capitalize">{(doc.documentType || 'document').replace('_', ' ')}</p>
                     </div>
                   </div>
                   <span

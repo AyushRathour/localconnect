@@ -255,10 +255,12 @@ const SEED_SERVICES = [
     categoryId: 'cat_electrician',
     title: 'Emergency Short Circuit Diagnostics & Repair',
     description: 'Comprehensive electrical triage including thermal scanning of distribution boxes, blown fuse replacement, and spark hazard resolution.',
+    pricingType: 'fixed',
     priceType: 'fixed',
     price: 499,
     durationMinutes: 60,
     serviceArea: 'Indiranagar',
+    serviceAreas: ['Indiranagar', 'Koramangala', 'Domlur'],
     includedItems: ['Thermal fuse scanning', 'Switchboard wire tightening', 'Safety breaker test', '30-day service warranty'],
     excludedItems: ['New MCB hardware purchase', 'Wall trenching for hidden conduits'],
     isFeatured: true,
@@ -270,10 +272,12 @@ const SEED_SERVICES = [
     categoryId: 'cat_electrician',
     title: 'Complete Home Inverter & UPS Installation',
     description: 'Heavy-duty dual inverter cabling with dedicated earthing and load balancing for seamless power backup during grid outages.',
+    pricingType: 'fixed',
     priceType: 'fixed',
     price: 1499,
     durationMinutes: 120,
     serviceArea: 'Indiranagar',
+    serviceAreas: ['Indiranagar', 'Koramangala', 'HSR Layout'],
     includedItems: ['Inverter battery terminal setup', 'Main line bypass switch installation', 'Earthing leakage check'],
     excludedItems: ['Inverter and battery cost'],
     isFeatured: false,
@@ -285,10 +289,12 @@ const SEED_SERVICES = [
     categoryId: 'cat_plumber',
     title: 'Emergency Concealed Pipe Leak Triage',
     description: 'Acoustic leak detection and fast hydraulic repair for internal wall seepages, leaking bib-cocks, and kitchen sink traps.',
+    pricingType: 'fixed',
     priceType: 'fixed',
     price: 399,
     durationMinutes: 45,
     serviceArea: 'Whitefield',
+    serviceAreas: ['Whitefield', 'Marathahalli', 'Bellandur'],
     includedItems: ['Acoustic leak test', 'Teflon tape seal replacement', 'Drain valve tightening'],
     excludedItems: ['Tile cutting and masonry restoration'],
     isFeatured: true,
@@ -300,10 +306,12 @@ const SEED_SERVICES = [
     categoryId: 'cat_plumber',
     title: 'Premium Sanitaryware & Shower Mixer Installation',
     description: 'Flawless fitting of diverters, concealed wall mixers, overhead rain showers, and dual-flush commodes with zero drips.',
+    pricingType: 'fixed',
     priceType: 'fixed',
     price: 899,
     durationMinutes: 90,
     serviceArea: 'Whitefield',
+    serviceAreas: ['Whitefield', 'Marathahalli', 'Bellandur'],
     includedItems: ['Pressure alignment', 'Silicone bead sealing', '30-day drip guarantee'],
     excludedItems: ['Chrome fixtures supply'],
     isFeatured: false,
@@ -315,10 +323,12 @@ const SEED_SERVICES = [
     categoryId: 'cat_cleaning',
     title: 'Full Home Deep Sanitization & Steam Vacuum',
     description: 'Hospital-grade steam sanitation for 2BHK/3BHK residences. Includes high-pressure floor scrubbing, window track cleaning, and dustmite removal.',
+    pricingType: 'fixed',
     priceType: 'fixed',
     price: 2499,
     durationMinutes: 240,
     serviceArea: 'Koramangala',
+    serviceAreas: ['Koramangala', 'Jayanagar', 'JP Nagar', 'Indiranagar'],
     includedItems: ['Single-disc machine floor scrub', 'Bathroom limescale removal', 'Window track vacuuming', 'Anti-bacterial mist spray'],
     excludedItems: ['Exterior balcony pressure wash'],
     isFeatured: true,
@@ -330,10 +340,12 @@ const SEED_SERVICES = [
     categoryId: 'cat_cleaning',
     title: 'Modular Kitchen Heavy Degreasing Service',
     description: 'Intense chemical degreasing of chimney filters, stainless steel racks, oil-stained tiles, and under-counter cabinetry.',
+    pricingType: 'fixed',
     priceType: 'fixed',
     price: 1299,
     durationMinutes: 120,
     serviceArea: 'Koramangala',
+    serviceAreas: ['Koramangala', 'Jayanagar', 'JP Nagar', 'Indiranagar'],
     includedItems: ['Chimney baffle filter soak', 'Countertop oil stain scrub', 'Tile grout restoration'],
     excludedItems: ['Chimney motor replacement'],
     isFeatured: false,
@@ -345,10 +357,12 @@ const SEED_SERVICES = [
     categoryId: 'cat_acrepair',
     title: 'Split AC High-Pressure Jet Service & Foam Wash',
     description: 'Thorough indoor blower fan jet wash with chemical disinfectant, outdoor condenser coil rinse, and cooling temperature test.',
+    pricingType: 'fixed',
     priceType: 'fixed',
     price: 799,
     durationMinutes: 60,
     serviceArea: 'Indiranagar',
+    serviceAreas: ['Indiranagar', 'HSR Layout', 'Koramangala', 'Whitefield'],
     includedItems: ['Indoor coil jet cleaning with spill jacket', 'Condenser fan wash', 'Drain pipe flushing', 'Filter sanitization'],
     excludedItems: ['Refrigerant gas replenishment'],
     isFeatured: true,
@@ -360,10 +374,12 @@ const SEED_SERVICES = [
     categoryId: 'cat_acrepair',
     title: 'AC Gas Charging & Refrigerant Leak Triage',
     description: 'Nitrogen pressure testing, vacuum extraction of air bubbles, and precision R32/R410A gas charging with digital gauge calibration.',
+    pricingType: 'fixed',
     priceType: 'fixed',
     price: 1899,
     durationMinutes: 90,
     serviceArea: 'Indiranagar',
+    serviceAreas: ['Indiranagar', 'HSR Layout', 'Koramangala', 'Whitefield'],
     includedItems: ['Nitrogen leak test', 'Vacuum dehydration cycle', 'Original refrigerant refill', 'Cooling drop check'],
     excludedItems: ['Compressor replacement'],
     isFeatured: false,
@@ -499,7 +515,20 @@ class LocalDataStore {
     try {
       const existing = localStorage.getItem(this.key);
       if (existing) {
-        return JSON.parse(existing);
+        const parsed: StaticDB = JSON.parse(existing);
+        if (parsed && Array.isArray(parsed.services)) {
+          parsed.services = parsed.services.map((s: any) => ({
+            ...s,
+            pricingType: s.pricingType || s.priceType || 'fixed',
+            priceType: s.pricingType || s.priceType || 'fixed',
+            serviceAreas: Array.isArray(s.serviceAreas)
+              ? s.serviceAreas
+              : s.serviceArea
+              ? [s.serviceArea]
+              : ['Indiranagar', 'Koramangala'],
+          }));
+        }
+        return parsed;
       }
     } catch (e) {
       console.warn('Failed to parse localStorage db, resetting:', e);
@@ -549,6 +578,7 @@ class LocalDataStore {
   }
 
   public handleRequest(endpoint: string, options: RequestInit = {}): any {
+    endpoint = endpoint || '';
     const db = this.getDb();
     const method = (options.method || 'GET').toUpperCase();
     let body: any = {};
@@ -981,8 +1011,21 @@ class LocalDataStore {
     const provider = db.providerProfiles.find((p) => p._id === srv.providerId);
     const category = db.categories.find((c) => c._id === srv.categoryId);
     const providerUser = provider ? db.users.find((u) => u._id === provider.userId) : null;
+    const pricingType = srv.pricingType || srv.priceType || 'fixed';
+    const serviceAreas = Array.isArray(srv.serviceAreas)
+      ? srv.serviceAreas
+      : srv.serviceArea
+      ? [srv.serviceArea]
+      : provider?.serviceAreas || ['Indiranagar', 'Koramangala'];
+
     return {
       ...srv,
+      pricingType,
+      priceType: pricingType,
+      serviceAreas,
+      serviceArea: srv.serviceArea || serviceAreas[0] || 'Indiranagar',
+      category: category || { _id: srv.categoryId, name: 'General Service' },
+      provider: provider ? { ...provider, user: providerUser } : undefined,
       categoryName: category?.name || 'General Service',
       categorySlug: category?.slug || 'general',
       providerBusinessName: provider?.businessName || 'Local Specialist',

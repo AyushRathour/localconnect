@@ -274,7 +274,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="space-y-4">
           <div className="p-3 bg-slate-50 rounded-xl text-xs space-y-1">
             <p><strong>Provider:</strong> {selectedProf?.businessName} ({selectedProf?.user?.name})</p>
-            <p><strong>Decision:</strong> <span className="font-bold uppercase text-[#16324F]">{decision.replace('_', ' ')}</span></p>
+            <p><strong>Decision:</strong> <span className="font-bold uppercase text-[#16324F]">{(decision || 'approved').replace('_', ' ')}</span></p>
           </div>
 
           <div className="space-y-1">
@@ -330,7 +330,7 @@ export const AdminDashboard: React.FC = () => {
                   : 'bg-amber-600 hover:bg-amber-700'
               }`}
             >
-              {submitting ? 'Recording...' : `Confirm ${decision.replace('_', ' ')}`}
+              {submitting ? 'Recording...' : `Confirm ${(decision || 'approved').replace('_', ' ')}`}
             </button>
           </div>
         </div>

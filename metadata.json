@@ -1,0 +1,6 @@
+{
+  "name": "LocalConnect",
+  "description": "Local service discovery, verified provider profiles, and online booking platform connecting customers with trusted local professionals.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

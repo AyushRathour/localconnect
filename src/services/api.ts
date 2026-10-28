@@ -27,7 +27,24 @@ class ApiError extends Error {
   }
 }
 
+import { localDataStore } from './localDataStore';
+
+const isStaticDeployment = typeof window !== 'undefined' && (
+  window.location.hostname.includes('github.io') ||
+  window.location.hostname.includes('pages.dev') ||
+  window.location.protocol === 'file:'
+);
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  if (isStaticDeployment) {
+    try {
+      const result = localDataStore.handleRequest(endpoint, options);
+      return result as T;
+    } catch (e) {
+      console.error('Static local fallback error:', e);
+    }
+  }
+
   const token = localStorage.getItem('localconnect_token');
 
   const headers: Record<string, string> = {
@@ -45,14 +62,24 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     credentials: 'include', // sends cookies
   };
 
-  const response = await fetch(`${API_BASE}${endpoint}`, config);
-  const json = await response.json().catch(() => ({}));
+  try {
+    const response = await fetch(`${API_BASE}${endpoint}`, config);
+    const contentType = response.headers.get('content-type') || '';
 
-  if (!response.ok) {
-    throw new ApiError(json.message || `Request failed with status ${response.status}`, response.status, json);
+    // If endpoint returned 404 or static host served HTML 404 page
+    if (!response.ok || contentType.includes('text/html')) {
+      console.warn(`[LocalConnect] API ${endpoint} unavailable (status ${response.status}). Using local fallback store.`);
+      const fallbackResult = localDataStore.handleRequest(endpoint, options);
+      return fallbackResult as T;
+    }
+
+    const json = await response.json().catch(() => ({}));
+    return json as T;
+  } catch (networkError) {
+    console.warn(`[LocalConnect] Network error for ${endpoint}. Using local fallback store.`, networkError);
+    const fallbackResult = localDataStore.handleRequest(endpoint, options);
+    return fallbackResult as T;
   }
-
-  return json as T;
 }
 
 export const api = {

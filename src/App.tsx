@@ -1,6 +1,7 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 // Layouts & Guards
 import { MainLayout } from './components/layout/MainLayout';
@@ -56,11 +57,23 @@ import {
   AdminAuditLogsPage,
 } from './pages/admin/AdminPages';
 
+// Auto-detect static GitHub Pages or subpath hosting to use HashRouter
+const isGitHubPages = typeof window !== 'undefined' && (
+  window.location.hostname.includes('github.io') ||
+  window.location.hostname.includes('pages.dev') ||
+  window.location.protocol === 'file:' ||
+  window.location.pathname.includes('/LocalConnect') ||
+  Boolean(window.location.hash && !window.location.pathname.startsWith('/api'))
+);
+
+const Router = isGitHubPages ? HashRouter : BrowserRouter;
+
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <Routes>
           {/* Public Storefront Routes */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<HomePage />} />
@@ -142,7 +155,8 @@ export default function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
-      </BrowserRouter>
+      </Router>
     </AuthProvider>
+  </ErrorBoundary>
   );
 }

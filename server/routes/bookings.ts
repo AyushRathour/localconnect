@@ -1,8 +1,8 @@
-import { Router, Response } from 'express';
+import { Router, type Response } from 'express';
 import crypto from 'crypto';
-import { db } from '../db/store';
-import { authenticate, requireRole, AuthenticatedRequest } from '../middleware/auth';
-import { BookingStatus, IBookingStatusHistory } from '../db/types';
+import { db } from '../db/store.ts';
+import { authenticate, requireRole, type AuthenticatedRequest } from '../middleware/auth.ts';
+import type { BookingStatus, IBookingStatusHistory } from '../db/types.ts';
 
 const router = Router();
 

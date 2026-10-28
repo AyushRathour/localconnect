@@ -12,9 +12,47 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      // GitHub Pages URL normalization: Ensure trailing slash on repo paths and convert deep links to hash routes
+      (function() {
+        if (typeof window === 'undefined') return;
+        var l = window.location;
+        if (l.hostname.includes('github.io') || l.hostname.includes('pages.dev')) {
+          var parts = l.pathname.split('/').filter(Boolean);
+          // For project pages: parts[0] is repo name
+          var isUserPage = l.hostname.split('.')[0] === (parts[0] || '');
+          var repo = isUserPage ? '' : (parts.length > 0 ? '/' + parts[0] : '');
+          var subroute = isUserPage ? parts.join('/') : parts.slice(1).join('/');
+          
+          // 1. Ensure trailing slash on repo root: user.github.io/repo -> user.github.io/repo/
+          if (parts.length === 1 && !isUserPage && !l.pathname.endsWith('/')) {
+            window.location.replace(l.protocol + '//' + l.host + '/' + parts[0] + '/' + l.search + l.hash);
+            return;
+          }
+
+          // 2. Convert direct subroute to hash: user.github.io/repo/services -> user.github.io/repo/#/services
+          if (subroute && !l.hash) {
+            window.location.replace(l.protocol + '//' + l.host + repo + '/#/' + subroute + l.search);
+          }
+        }
+      })();
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #F7F9FC; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #172B4D; padding: 24px;">
+        <div style="background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 32px; max-width: 440px; width: 100%; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+          <div style="width: 48px; height: 48px; border-radius: 12px; background: #E6F7F5; color: #0F9D8A; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; margin-bottom: 16px;">
+            ⚡
+          </div>
+          <h2 style="font-size: 20px; font-weight: 700; color: #16324F; margin: 0 0 8px 0;">LocalConnect</h2>
+          <p style="font-size: 14px; color: #64748B; margin: 0 0 20px 0;">Loading verified local services and providers...</p>
+          <div style="width: 100%; height: 4px; background: #E2E8F0; border-radius: 2px; overflow: hidden; position: relative;">
+            <div style="width: 40%; height: 100%; background: #0F9D8A; border-radius: 2px; animation: pulse 1.5s infinite ease-in-out;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

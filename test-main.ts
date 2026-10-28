@@ -1,0 +1,1 @@
+import "tsx"; import { val } from "./test-sub"; console.log("TSX extensionless:", val);

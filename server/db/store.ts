@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import {
+import type {
   IUser,
   IProviderProfile,
   IVerificationDocument,
@@ -14,7 +14,7 @@ import {
   INotification,
   IContactMessage,
   IAuditLog,
-} from './types';
+} from './types.ts';
 
 export interface IDatabaseSchema {
   users: IUser[];

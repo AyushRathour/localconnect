@@ -7,16 +7,17 @@
     <script>
       // Single Page App redirect for GitHub Pages
       (function() {
-        var pathname = window.location.pathname;
+        var l = window.location;
+        var pathname = l.pathname;
         var segments = pathname.split('/').filter(Boolean);
-        // On user.github.io/repo-name/..., segments[0] is 'repo-name'
-        var repo = segments.length > 0 ? '/' + segments[0] : '';
-        var route = segments.slice(1).join('/');
-        var search = window.location.search || '';
-        var hash = window.location.hash || '';
+        var isUserSite = l.hostname.split('.')[0] === (segments[0] || '');
+        var repo = isUserSite ? '' : (segments.length > 0 ? '/' + segments[0] : '');
+        var route = isUserSite ? segments.join('/') : segments.slice(1).join('/');
+        var search = l.search || '';
+        var hash = l.hash || '';
         // Redirect to hash route so HashRouter can load the view without server 404
-        var target = repo + '/#/' + route + search + hash;
-        window.location.replace(target);
+        var target = repo + '/#/' + (route ? route : '') + search + hash;
+        l.replace(target);
       })();
     </script>
     <style>

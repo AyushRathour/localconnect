@@ -62,7 +62,7 @@ const isGitHubPages = typeof window !== 'undefined' && (
   window.location.hostname.includes('github.io') ||
   window.location.hostname.includes('pages.dev') ||
   window.location.protocol === 'file:' ||
-  window.location.pathname.includes('/LocalConnect') ||
+  window.location.pathname.toLowerCase().includes('/localconnect') ||
   Boolean(window.location.hash && !window.location.pathname.startsWith('/api'))
 );
 

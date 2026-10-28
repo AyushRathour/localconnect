@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { db } from '../db/store';
-import { IUser, UserRole } from '../db/types';
+import { db } from '../db/store.ts';
+import type { IUser, UserRole } from '../db/types.ts';
 
 export const JWT_SECRET = process.env.JWT_SECRET || 'localconnect_jwt_secret_dev_key_2026_academic_secure';
 

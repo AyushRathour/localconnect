@@ -1,6 +1,6 @@
-import { Router, Response } from 'express';
-import { db } from '../db/store';
-import { authenticate, AuthenticatedRequest } from '../middleware/auth';
+import { Router, type Response } from 'express';
+import { db } from '../db/store.ts';
+import { authenticate, type AuthenticatedRequest } from '../middleware/auth.ts';
 
 const router = Router();
 

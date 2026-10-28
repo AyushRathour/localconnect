@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs';
-import { db } from '../db/store';
-import { seedDatabase } from '../db/seed';
-import { generateToken } from '../middleware/auth';
-import { recalculateProviderRating } from '../routes/reviews';
+import { db } from '../db/store.ts';
+import { seedDatabase } from '../db/seed.ts';
+import { generateToken } from '../middleware/auth.ts';
+import { recalculateProviderRating } from '../routes/reviews.ts';
 
 async function runTests() {
   console.log('--- [LOCALCONNECT QA TEST SUITE] ---');

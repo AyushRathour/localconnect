@@ -1,21 +1,21 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { type Request, type Response, type NextFunction } from 'express';
 import path from 'path';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { createServer as createViteServer } from 'vite';
-import { seedDatabase } from './server/db/seed';
+import { seedDatabase } from './server/db/seed.ts';
 
 // Import route modules
-import authRoutes from './server/routes/auth';
-import categoriesRoutes from './server/routes/categories';
-import servicesRoutes from './server/routes/services';
-import providersRoutes from './server/routes/providers';
-import bookingsRoutes from './server/routes/bookings';
-import reviewsRoutes from './server/routes/reviews';
-import customerRoutes from './server/routes/customer';
-import notificationsRoutes from './server/routes/notifications';
-import contactRoutes from './server/routes/contact';
-import adminRoutes from './server/routes/admin';
+import authRoutes from './server/routes/auth.ts';
+import categoriesRoutes from './server/routes/categories.ts';
+import servicesRoutes from './server/routes/services.ts';
+import providersRoutes from './server/routes/providers.ts';
+import bookingsRoutes from './server/routes/bookings.ts';
+import reviewsRoutes from './server/routes/reviews.ts';
+import customerRoutes from './server/routes/customer.ts';
+import notificationsRoutes from './server/routes/notifications.ts';
+import contactRoutes from './server/routes/contact.ts';
+import adminRoutes from './server/routes/admin.ts';
 
 async function startServer() {
   const app = express();
@@ -80,7 +80,7 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.resolve(__dirname, 'dist');
+    const distPath = path.resolve(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (_req: Request, res: Response) => {
       res.sendFile(path.resolve(distPath, 'index.html'));

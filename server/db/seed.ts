@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { db } from './store';
+import { db } from './store.ts';
 
 export async function seedDatabase(force: boolean = false) {
   if (!force && db.users.count() > 0) {

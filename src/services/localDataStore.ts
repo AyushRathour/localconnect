@@ -551,7 +551,16 @@ class LocalDataStore {
   public handleRequest(endpoint: string, options: RequestInit = {}): any {
     const db = this.getDb();
     const method = (options.method || 'GET').toUpperCase();
-    const body = options.body ? JSON.parse(options.body as string) : {};
+    let body: any = {};
+    if (typeof options.body === 'string') {
+      try {
+        body = JSON.parse(options.body);
+      } catch {
+        body = {};
+      }
+    } else if (options.body && typeof options.body === 'object') {
+      body = options.body;
+    }
 
     // 1. Auth routes
     if (endpoint === '/auth/me') {

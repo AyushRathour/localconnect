@@ -1,9 +1,9 @@
-import { Router, Response } from 'express';
-import { db } from '../db/store';
-import { authenticate, requireRole, AuthenticatedRequest } from '../middleware/auth';
-import { sanitizeUser } from './auth';
-import { recalculateProviderRating } from './reviews';
-import { VerificationStatus } from '../db/types';
+import { Router, type Response } from 'express';
+import { db } from '../db/store.ts';
+import { authenticate, requireRole, type AuthenticatedRequest } from '../middleware/auth.ts';
+import { sanitizeUser } from './auth.ts';
+import { recalculateProviderRating } from './reviews.ts';
+import type { VerificationStatus } from '../db/types.ts';
 
 const router = Router();
 

@@ -25,25 +25,47 @@ export const HomePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArea, setSelectedArea] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const { user, quickLoginAs } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    async function loadHomeData() {
-      try {
-        setLoading(true);
-        const [catsRes, srvsRes] = await Promise.all([
-          api.getCategories(),
-          api.getFeaturedServices(),
-        ]);
-        if (catsRes.success && catsRes.data) setCategories(catsRes.data);
-        if (srvsRes.success && srvsRes.data) setFeaturedServices(srvsRes.data);
-      } catch (err) {
-        console.error('Failed to load home page data:', err);
-      } finally {
+  const loadHomeData = async () => {
+    let finished = false;
+    const timeout = setTimeout(() => {
+      if (!finished) {
+        finished = true;
         setLoading(false);
       }
+    }, 4000);
+
+    try {
+      setLoading(true);
+      setLoadError(null);
+      const [catsRes, srvsRes] = await Promise.all([
+        api.getCategories().catch(() => ({ success: false, data: [] })),
+        api.getFeaturedServices().catch(() => ({ success: false, data: [] })),
+      ]);
+      if (!finished) {
+        if (catsRes?.success && catsRes.data && catsRes.data.length > 0) {
+          setCategories(catsRes.data);
+        }
+        if (srvsRes?.success && srvsRes.data && srvsRes.data.length > 0) {
+          setFeaturedServices(srvsRes.data);
+        }
+      }
+    } catch (err: any) {
+      console.error('Failed to load home page data:', err);
+      if (!finished) {
+        setLoadError(err?.message || 'Failed to load services directory');
+      }
+    } finally {
+      clearTimeout(timeout);
+      finished = true;
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     loadHomeData();
   }, []);
 

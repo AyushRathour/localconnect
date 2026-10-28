@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { safeStorage } from '../services/localDataStore';
 
 export interface User {
   _id: string;
@@ -49,26 +50,41 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [providerProfile, setProviderProfile] = useState<ProviderProfile | null>(null);
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('localconnect_token'));
+  const [token, setToken] = useState<string | null>(() => safeStorage.getItem('localconnect_token'));
   const [loading, setLoading] = useState<boolean>(true);
 
   const fetchCurrentUser = async () => {
+    let finished = false;
+    // Guaranteed safety timeout: never remain in loading state over 3.5s
+    const timer = setTimeout(() => {
+      if (!finished) {
+        finished = true;
+        setLoading(false);
+      }
+    }, 3500);
+
     try {
       setLoading(true);
       const res = await api.getMe();
-      if (res.success && res.user) {
-        setUser(res.user);
-        setProviderProfile(res.providerProfile || null);
-      } else {
-        setUser(null);
-        setProviderProfile(null);
+      if (!finished) {
+        if (res.success && res.user) {
+          setUser(res.user);
+          setProviderProfile(res.providerProfile || null);
+        } else {
+          setUser(null);
+          setProviderProfile(null);
+        }
       }
     } catch {
-      setUser(null);
-      setProviderProfile(null);
-      localStorage.removeItem('localconnect_token');
-      setToken(null);
+      if (!finished) {
+        setUser(null);
+        setProviderProfile(null);
+        safeStorage.removeItem('localconnect_token');
+        setToken(null);
+      }
     } finally {
+      clearTimeout(timer);
+      finished = true;
       setLoading(false);
     }
   };
@@ -80,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (credentials: { email: string; password: string }) => {
     const res = await api.login(credentials);
     if (res.success && res.token) {
-      localStorage.setItem('localconnect_token', res.token);
+      safeStorage.setItem('localconnect_token', res.token);
       setToken(res.token);
       setUser(res.user);
       setProviderProfile(res.providerProfile || null);
@@ -90,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (payload: any) => {
     const res = await api.register(payload);
     if (res.success && res.token) {
-      localStorage.setItem('localconnect_token', res.token);
+      safeStorage.setItem('localconnect_token', res.token);
       setToken(res.token);
       setUser(res.user);
       setProviderProfile(res.providerProfile || null);
@@ -103,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // ignore
     } finally {
-      localStorage.removeItem('localconnect_token');
+      safeStorage.removeItem('localconnect_token');
       setToken(null);
       setUser(null);
       setProviderProfile(null);

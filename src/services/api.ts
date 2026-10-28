@@ -27,25 +27,35 @@ class ApiError extends Error {
   }
 }
 
-import { localDataStore } from './localDataStore';
+import { localDataStore, safeStorage } from './localDataStore';
 
-const isStaticDeployment = typeof window !== 'undefined' && (
-  window.location.hostname.includes('github.io') ||
-  window.location.hostname.includes('pages.dev') ||
-  window.location.protocol === 'file:'
-);
+function isStaticEnvironment(): boolean {
+  if (typeof window === 'undefined') return false;
+  const h = window.location.hostname;
+  return (
+    h.includes('github.io') ||
+    h.includes('pages.dev') ||
+    h.includes('netlify.app') ||
+    window.location.protocol === 'file:' ||
+    window.location.pathname.toLowerCase().includes('/localconnect') ||
+    Boolean(window.location.hash && !window.location.pathname.startsWith('/api'))
+  );
+}
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  if (isStaticDeployment) {
+  // If running on static host (GitHub Pages, Cloudflare Pages, etc.), immediately use local store
+  if (isStaticEnvironment()) {
     try {
       const result = localDataStore.handleRequest(endpoint, options);
-      return result as T;
+      if (result !== undefined) {
+        return result as T;
+      }
     } catch (e) {
-      console.error('Static local fallback error:', e);
+      console.warn('Local store handler error, falling back to network:', e);
     }
   }
 
-  const token = localStorage.getItem('localconnect_token');
+  const token = safeStorage.getItem('localconnect_token');
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -56,29 +66,36 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers['Authorization'] = `Bearer ${token}`;
   }
 
+  // Set up 4-second timeout to avoid infinite hanging requests
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
+
   const config: RequestInit = {
     ...options,
     headers,
-    credentials: 'include', // sends cookies
+    credentials: 'include',
+    signal: options.signal || controller.signal,
   };
 
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, config);
+    clearTimeout(timeoutId);
     const contentType = response.headers.get('content-type') || '';
 
     // If endpoint returned 404 or static host served HTML 404 page
     if (!response.ok || contentType.includes('text/html')) {
       console.warn(`[LocalConnect] API ${endpoint} unavailable (status ${response.status}). Using local fallback store.`);
       const fallbackResult = localDataStore.handleRequest(endpoint, options);
-      return fallbackResult as T;
+      return (fallbackResult || { success: false, message: 'Endpoint unavailable' }) as T;
     }
 
     const json = await response.json().catch(() => ({}));
     return json as T;
   } catch (networkError) {
-    console.warn(`[LocalConnect] Network error for ${endpoint}. Using local fallback store.`, networkError);
+    clearTimeout(timeoutId);
+    console.warn(`[LocalConnect] Network error or timeout for ${endpoint}. Using local fallback store.`, networkError);
     const fallbackResult = localDataStore.handleRequest(endpoint, options);
-    return fallbackResult as T;
+    return (fallbackResult || { success: false, message: 'Network offline, using local store' }) as T;
   }
 }
 

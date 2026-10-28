@@ -508,12 +508,48 @@ const SEED_AUDIT_LOGS = [
   },
 ];
 
+const inMemoryFallback = new Map<string, string>();
+
+export const safeStorage = {
+  getItem(key: string): string | null {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return window.localStorage.getItem(key);
+      }
+    } catch {
+      // Storage restricted, incognito, or sandbox
+    }
+    return inMemoryFallback.get(key) || null;
+  },
+  setItem(key: string, value: string): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(key, value);
+        return;
+      }
+    } catch {
+      // Storage quota or restriction
+    }
+    inMemoryFallback.set(key, value);
+  },
+  removeItem(key: string): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem(key);
+      }
+    } catch {
+      // Storage restricted
+    }
+    inMemoryFallback.delete(key);
+  },
+};
+
 class LocalDataStore {
   private key = 'localconnect_static_db';
 
   public getDb(): StaticDB {
     try {
-      const existing = localStorage.getItem(this.key);
+      const existing = safeStorage.getItem(this.key);
       if (existing) {
         const parsed: StaticDB = JSON.parse(existing);
         if (parsed && Array.isArray(parsed.services)) {
@@ -551,14 +587,14 @@ class LocalDataStore {
 
   public saveDb(db: StaticDB) {
     try {
-      localStorage.setItem(this.key, JSON.stringify(db));
+      safeStorage.setItem(this.key, JSON.stringify(db));
     } catch (e) {
       console.error('Failed to save to localStorage:', e);
     }
   }
 
   public getCurrentUser(): { user: any; providerProfile: any } | null {
-    const token = localStorage.getItem('localconnect_token');
+    const token = safeStorage.getItem('localconnect_token');
     if (!token) return null;
     const db = this.getDb();
 
@@ -611,7 +647,7 @@ class LocalDataStore {
         else user = db.users[1];
       }
       const token = `mock_token_${user.role}_${user._id}`;
-      localStorage.setItem('localconnect_token', token);
+      safeStorage.setItem('localconnect_token', token);
       const providerProfile = user.role === 'provider' ? db.providerProfiles.find((p) => p.userId === user._id) || null : null;
       return { success: true, message: 'Login successful', token, user, providerProfile };
     }
@@ -649,12 +685,12 @@ class LocalDataStore {
       }
       this.saveDb(db);
       const token = `mock_token_${newUser.role}_${newUser._id}`;
-      localStorage.setItem('localconnect_token', token);
+      safeStorage.setItem('localconnect_token', token);
       return { success: true, message: 'Registration successful', token, user: newUser, providerProfile: newProfile };
     }
 
     if (endpoint === '/auth/logout') {
-      localStorage.removeItem('localconnect_token');
+      safeStorage.removeItem('localconnect_token');
       return { success: true, message: 'Logged out successfully' };
     }
 

@@ -13,28 +13,72 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
-      // GitHub Pages URL normalization: Ensure trailing slash on repo paths and convert deep links to hash routes
+      // 1. Dynamic GitHub Pages base resolver & URL normalizer
       (function() {
         if (typeof window === 'undefined') return;
         var l = window.location;
-        if (l.hostname.includes('github.io') || l.hostname.includes('pages.dev')) {
-          var parts = l.pathname.split('/').filter(Boolean);
-          // For project pages: parts[0] is repo name
-          var isUserPage = l.hostname.split('.')[0] === (parts[0] || '');
-          var repo = isUserPage ? '' : (parts.length > 0 ? '/' + parts[0] : '');
-          var subroute = isUserPage ? parts.join('/') : parts.slice(1).join('/');
-          
-          // 1. Ensure trailing slash on repo root: user.github.io/repo -> user.github.io/repo/
-          if (parts.length === 1 && !isUserPage && !l.pathname.endsWith('/')) {
-            window.location.replace(l.protocol + '//' + l.host + '/' + parts[0] + '/' + l.search + l.hash);
+        var p = l.pathname;
+        var isGitHubPages = l.hostname.includes('github.io') || l.hostname.includes('pages.dev');
+        if (isGitHubPages) {
+          var parts = p.split('/').filter(Boolean);
+          var isUserSite = l.hostname.split('.')[0].toLowerCase() === (parts[0] || '').toLowerCase();
+          var repo = isUserSite ? '' : (parts.length > 0 ? '/' + parts[0] : '');
+          var baseHref = isUserSite ? '/' : (repo ? repo + '/' : '/');
+
+          // Dynamically ensure <base> tag is present for relative asset resolution
+          var base = document.querySelector('base');
+          if (!base) {
+            base = document.createElement('base');
+            document.head.appendChild(base);
+          }
+          base.href = baseHref;
+
+          // Ensure trailing slash on project repo root: user.github.io/repo -> user.github.io/repo/
+          if (parts.length === 1 && !isUserSite && !p.endsWith('/')) {
+            window.location.replace(l.protocol + '//' + l.host + repo + '/' + l.search + l.hash);
             return;
           }
 
-          // 2. Convert direct subroute to hash: user.github.io/repo/services -> user.github.io/repo/#/services
+          // Deep subroute to hash: user.github.io/repo/services -> user.github.io/repo/#/services
+          var subroute = isUserSite ? parts.join('/') : parts.slice(1).join('/');
           if (subroute && !l.hash) {
             window.location.replace(l.protocol + '//' + l.host + repo + '/#/' + subroute + l.search);
           }
         }
+      })();
+
+      // 2. Watchdog timer & error handler to prevent infinite loading screens
+      (function() {
+        var timer = null;
+        function showStartupNotice(msg, detail) {
+          var root = document.getElementById('root');
+          if (!root || window.__LOCALCONNECT_MOUNTED__) return;
+          if (timer) clearTimeout(timer);
+          root.innerHTML = '<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #F7F9FC; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; color: #172B4D; padding: 24px;">' +
+            '<div style="background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 32px; max-width: 440px; width: 100%; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">' +
+            '<div style="width: 48px; height: 48px; border-radius: 12px; background: #FEF3C7; color: #D97706; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; margin-bottom: 16px;">⚡</div>' +
+            '<h2 style="font-size: 20px; font-weight: 700; color: #16324F; margin: 0 0 8px 0;">LocalConnect</h2>' +
+            '<p style="font-size: 13px; color: #64748B; margin: 0 0 16px 0;">' + (msg || 'Connecting to local verified service directory...') + '</p>' +
+            (detail ? '<div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px; border-radius: 8px; font-family: monospace; font-size: 11px; color: #DC2626; text-align: left; overflow-x: auto; margin-bottom: 16px; max-height: 100px;">' + detail + '</div>' : '') +
+            '<div style="display: flex; gap: 8px;">' +
+            '<button onclick="window.location.reload()" style="flex: 1; padding: 10px 14px; background: #16324F; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Reload Page</button>' +
+            '<button onclick="try{localStorage.clear();sessionStorage.clear();}catch(e){}window.location.reload();" style="flex: 1; padding: 10px 14px; background: #E2E8F0; color: #1E293B; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Reset Cache & Retry</button>' +
+            '</div></div></div>';
+        }
+
+        window.addEventListener('error', function(e) {
+          if (!window.__LOCALCONNECT_MOUNTED__) {
+            var detail = e.message || (e.target && e.target.src ? 'Resource failed: ' + e.target.src : 'Script loading issue');
+            showStartupNotice('A required script or stylesheet failed to initialize.', detail);
+          }
+        }, true);
+
+        // 5-second watchdog: if React has not mounted, offer user friendly options
+        timer = setTimeout(function() {
+          if (!window.__LOCALCONNECT_MOUNTED__) {
+            showStartupNotice('Loading is taking longer than expected.', 'If you are viewing this on GitHub Pages, click Reload or Reset Cache to initialize standalone mode.');
+          }
+        }, 5000);
       })();
     </script>
   </head>
